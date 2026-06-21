@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nós 3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f0f2f5; --surface: #fff; --border: #e4e6eb;
+      --ink: #050505; --muted: #65676b; --accent: #1877f2;
+      --accent-h: #166fe5; --radius: 12px;
+      --shadow: 0 1px 2px rgba(0,0,0,.10), 0 0 0 1px rgba(0,0,0,.04);
+    }
+    body { background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; min-height: 100vh; }
+
+    /* NAV */
+    nav { position: sticky; top: 0; z-index: 100; background: var(--surface); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 56px; gap: 12px; }
+    .nav-logo { font-weight: 700; font-size: 1.2rem; color: var(--accent); letter-spacing: -.5px; white-space: nowrap; }
+    .nav-logo span { color: var(--ink); }
+    .my-code-tag { font-size: .7rem; font-weight: 700; color: var(--accent); background: #e7f0fd; border-radius: 999px; padding: 3px 10px; cursor: pointer; white-space: nowrap; }
+    .my-code-tag:hover { background: #d0e4fc; }
+    .my-name-tag { font-size: .85rem; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; margin-left: auto; }
+
+    /* LAYOUT */
+    main { max-width: 600px; margin: 0 auto; padding: 20px 12px 80px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* AVATAR */
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#667eea,#764ba2); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; font-weight: 700; flex-shrink: 0; }
+
+    /* CARD */
+    .card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); }
+
+    /* CREATE */
+    .create-card { padding: 12px 16px 16px; }
+    .create-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .create-placeholder { flex: 1; background: var(--bg); border: none; border-radius: 999px; padding: 10px 16px; font-family: inherit; font-size: .95rem; color: var(--muted); cursor: pointer; text-align: left; }
+    .create-placeholder:hover { background: #e4e6eb; }
+    #createForm { display: none; flex-direction: column; gap: 12px; }
+    #createForm.open { display: flex; }
+    #captionInput { width: 100%; border: none; outline: none; font-family: inherit; font-size: 1.05rem; color: var(--ink); resize: none; min-height: 60px; background: transparent; }
+    #captionInput::placeholder { color: var(--muted); }
+    .drop-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; position: relative; }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: #e7f0fd; }
+    .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .drop-zone p { color: var(--muted); font-size: .88rem; }
+    .drop-zone p strong { color: var(--accent); }
+    #imagePreview { display: none; position: relative; border-radius: 10px; overflow: hidden; }
+    #imagePreview img { width: 100%; max-height: 400px; object-fit: cover; display: block; }
+    .remove-img { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,.6); color: #fff; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: .9rem; display: flex; align-items: center; justify-content: center; }
+    #uploadProgress { display: none; height: 3px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+    #uploadProgress.active { display: block; }
+    #uploadBar { height: 100%; background: var(--accent); width: 0%; transition: width .3s; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .btn { border: none; border-radius: 8px; padding: 9px 18px; font-family: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; }
+    .btn-ghost { background: var(--bg); color: var(--ink); }
+    .btn-ghost:hover { background: #e4e6eb; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* POST */
+    .post-card { overflow: hidden; }
+    .post-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px 10px; }
+    .post-delete-btn { background: none; border: none; cursor: pointer; font-size: .95rem; padding: 6px 8px; border-radius: 50%; color: var(--muted); opacity: .6; transition: background .15s, opacity .15s; }
+    .post-delete-btn:hover { background: var(--bg); opacity: 1; }
+    .comment-delete-btn { background: none; border: none; cursor: pointer; font-size: .8rem; padding: 2px 6px; color: var(--muted); opacity: .5; transition: opacity .15s; flex-shrink: 0; }
+    .comment-delete-btn:hover { opacity: 1; }
+    .post-author { font-weight: 700; font-size: .95rem; }
+    .post-date { font-size: .78rem; color: var(--muted); margin-top: 1px; }
+    .post-caption { padding: 0 16px 12px; line-height: 1.55; font-size: .95rem; }
+    .post-image { width: 100%; max-height: 520px; object-fit: cover; display: block; }
+    .user-code { font-size: .72rem; color: var(--muted); font-weight: 600; }
+
+    /* REACTIONS BAR */
+    .reactions-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; border-bottom: 1px solid var(--border); }
+    .reactions-summary { display: flex; align-items: center; gap: 4px; font-size: .85rem; color: var(--muted); }
+    .comments-count { font-size: .85rem; color: var(--muted); cursor: pointer; }
+    .comments-count:hover { text-decoration: underline; }
+
+    /* ACTION BAR */
+    .action-bar { display: flex; border-bottom: 1px solid var(--border); }
+    .action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 0; background: none; border: none; cursor: pointer; font-family: inherit; font-size: .88rem; font-weight: 600; color: var(--muted); border-radius: 8px; margin: 4px; transition: background .15s, color .15s; }
+    .action-btn:hover { background: var(--bg); color: var(--ink); }
+    .action-btn.liked { color: var(--accent); }
+    .emoji-picker-wrap { position: relative; flex: 1; }
+    .emoji-picker { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--surface); border-radius: 999px; box-shadow: 0 4px 20px rgba(0,0,0,.18); padding: 8px 12px; gap: 4px; z-index: 50; white-space: nowrap; }
+    .emoji-picker.open { display: flex; }
+    .emoji-opt { font-size: 1.4rem; cursor: pointer; padding: 4px 6px; border-radius: 50%; border: none; background: none; transition: transform .15s; line-height: 1; }
+    .emoji-opt:hover { transform: scale(1.35); }
+
+    /* COMMENTS */
+    .comments-section { padding: 8px 16px 12px; }
+    .comment-item { display: flex; gap: 8px; margin-bottom: 10px; }
+    .comment-bubble { background: var(--bg); border-radius: 18px; padding: 8px 12px; flex: 1; }
+    .comment-bubble .c-author { font-weight: 700; font-size: .85rem; }
+    .comment-bubble .c-text { font-size: .9rem; line-height: 1.45; margin-top: 2px; }
+    .comment-time { font-size: .72rem; color: var(--muted); margin-top: 4px; padding-left: 4px; }
+    .author-link { cursor: pointer; font-weight: 700; font-size: .85rem; }
+    .author-link:hover { text-decoration: underline; color: var(--accent); }
+    .comment-input-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .comment-input { flex: 1; background: var(--bg); border: none; border-radius: 999px; padding: 9px 16px; font-family: inherit; font-size: .9rem; outline: none; color: var(--ink); }
+    .comment-input::placeholder { color: var(--muted); }
+    .send-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; padding: 6px; color: var(--accent); opacity: .4; transition: opacity .15s; }
+    .send-btn.active { opacity: 1; }
+
+    /* SKELETON */
+    .skeleton-card { padding: 16px; }
+    .skel { background: linear-gradient(90deg,#f0f2f5 25%,#e8eaed 50%,#f0f2f5 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+    .feed-empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+    .feed-empty .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* CHAT TOGGLE */
+    #chatToggleBtn { position: fixed; bottom: 24px; right: 20px; background: var(--accent); color: #fff; border: none; border-radius: 999px; padding: 12px 20px; font-family: inherit; font-size: .88rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(24,119,242,.4); display: flex; align-items: center; gap: 8px; z-index: 100; transition: background .15s; }
+    #chatToggleBtn:hover { background: var(--accent-h); }
+    .badge { background: #e41e3f; color: #fff; border-radius: 999px; font-size: .7rem; font-weight: 700; padding: 1px 6px; min-width: 18px; text-align: center; display: none; }
+    .badge.show { display: inline-block; }
+
+    /* CHAT SIDEBAR */
+    #chatOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 249; }
+    #chatOverlay.open { display: block; }
+    #chatSidebar { position: fixed; top: 0; right: 0; bottom: 0; width: 340px; max-width: 100vw; background: var(--surface); box-shadow: -4px 0 24px rgba(0,0,0,.12); display: flex; flex-direction: column; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); z-index: 250; }
+    #chatSidebar.open { transform: translateX(0); }
+    .chat-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .chat-header .avatar { width: 36px; height: 36px; font-size: .9rem; }
+    .chat-with { flex: 1; min-width: 0; }
+    .chat-with-name { font-weight: 700; font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-with-sub { font-size: .75rem; color: var(--muted); }
+    .chat-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--muted); padding: 4px 8px; border-radius: 50%; }
+    .chat-close:hover { background: var(--bg); }
+    .chat-new-conv { padding: 10px 14px; border-bottom: 1px solid var(--border); display: none; }
+    .chat-new-conv input { width: 100%; padding: 9px 13px; border: 1.5px solid var(--border); border-radius: 9px; font-family: inherit; font-size: .88rem; outline: none; color: var(--ink); transition: border-color .15s; }
+    .chat-new-conv input:focus { border-color: var(--accent); }
+    .chat-new-conv p { font-size: .75rem; color: var(--muted); margin-top: 5px; padding: 0 2px; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .chat-bubble-wrap { display: flex; flex-direction: column; }
+    .chat-bubble-wrap.mine { align-items: flex-end; }
+    .chat-bubble-wrap.theirs { align-items: flex-start; }
+    .chat-bubble { max-width: 80%; padding: 9px 13px; border-radius: 18px; font-size: .9rem; line-height: 1.45; word-break: break-word; }
+    .mine .chat-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+    .theirs .chat-bubble { background: var(--bg); color: var(--ink); border-bottom-left-radius: 4px; }
+    .bubble-sender { font-size: .72rem; color: var(--muted); margin-bottom: 3px; padding: 0 4px; }
+    .bubble-time { font-size: .68rem; color: var(--muted); margin-top: 3px; padding: 0 4px; }
+    .chat-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: .88rem; text-align: center; padding: 20px; }
+    .chat-empty .icon { font-size: 2.2rem; }
+    .chat-input-row { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border); }
+    #chatInput { flex: 1; background: var(--bg); border: none; border-radius: 999px; padding: 10px 16px; font-family: inherit; font-size: .9rem; outline: none; color: var(--ink); }
+    #chatInput::placeholder { color: var(--muted); }
+    #chatSendBtn { background: var(--accent); color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: .4; transition: opacity .15s; flex-shrink: 0; }
+    #chatSendBtn.active { opacity: 1; }
+    .conv-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 10px; cursor: pointer; transition: background .15s; }
+    .conv-item:hover { background: var(--bg); }
+    .conv-unread { background: #e41e3f; color: #fff; border-radius: 999px; font-size: .7rem; font-weight: 700; padding: 2px 7px; flex-shrink: 0; }
+
+    /* MODAL */
+    #nameModal { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,.45); align-items: center; justify-content: center; padding: 20px; }
+    #nameModal.open { display: flex; }
+    .modal-box { background: var(--surface); border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 360px; box-shadow: 0 8px 40px rgba(0,0,0,.22); display: flex; flex-direction: column; gap: 16px; }
+    .modal-box h2 { font-size: 1.1rem; font-weight: 700; }
+    .modal-box p { font-size: .85rem; color: var(--muted); margin-top: -8px; }
+    .modal-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-family: inherit; font-size: .95rem; color: var(--ink); outline: none; transition: border-color .15s; }
+    .modal-input:focus { border-color: var(--accent); }
+    .modal-btn { background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 11px; font-family: inherit; font-size: .92rem; font-weight: 600; cursor: pointer; }
+    .modal-btn:hover { background: var(--accent-h); }
+    .modal-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .modal-link { background: none; border: none; color: var(--accent); font-family: inherit; font-size: .85rem; cursor: pointer; padding: 4px 0; text-align: center; text-decoration: underline; }
+    .modal-link:hover { opacity: .8; }
+
+    #credsModal { display: none; position: fixed; inset: 0; z-index: 350; background: rgba(0,0,0,.55); align-items: center; justify-content: center; padding: 20px; }
+    #credsModal.open { display: flex; }
+    .creds-box { background: var(--bg); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .creds-row { display: flex; justify-content: space-between; align-items: center; }
+    .creds-label { font-size: .85rem; color: var(--muted); font-weight: 600; }
+    .creds-value { font-size: 1.3rem; font-weight: 700; color: var(--accent); letter-spacing: .05em; font-family: monospace; }
+
+    /* TOAST */
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: #333; color: #fff; padding: 10px 20px; border-radius: 999px; font-size: .85rem; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 400; white-space: nowrap; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 480px) {
+      #chatSidebar { width: 100vw; }
+      nav { padding: 0 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAME MODAL -->
+<div id="nameModal">
+  <div class="modal-box">
+    <h2 id="modalTitle">👋 Bem-vindo!</h2>
+    <p id="modalDesc">Crie seu perfil para postar, comentar e conversar.</p>
+
+    <div id="modalNewUser">
+      <label style="font-size:.78rem;color:var(--muted);font-weight:600">Seu nome</label>
+      <input class="modal-input" id="nameInput" placeholder="ex: Maria" maxlength="50" autocomplete="off">
+      <label style="font-size:.78rem;color:var(--muted);font-weight:600">Crie um PIN (4 dígitos)</label>
+      <input class="modal-input" id="pinCreateInput" placeholder="ex: 9999" maxlength="4" inputmode="numeric" autocomplete="off">
+      <button class="modal-btn" id="nameConfirmBtn" disabled>Criar meu perfil</button>
+      <button class="modal-link" id="showReturnBtn">Já tenho um código — entrar</button>
+    </div>
+
+    <div id="modalReturning" style="display:none">
+      <label style="font-size:.78rem;color:var(--muted);font-weight:600">Código (4 dígitos)</label>
+      <input class="modal-input" id="codeReturnInput" placeholder="ex: 4721" maxlength="4" inputmode="numeric" autocomplete="off">
+      <label style="font-size:.78rem;color:var(--muted);font-weight:600">PIN (4 dígitos)</label>
+      <input class="modal-input" id="pinReturnInput" placeholder="ex: 9999" maxlength="4" inputmode="numeric" autocomplete="off">
+      <button class="modal-btn" id="codeReturnBtn" disabled>Entrar com meu código</button>
+      <button class="modal-link" id="showNewBtn">Sou novo — criar perfil</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREDENTIALS CONFIRMATION MODAL -->
+<div id="credsModal">
+  <div class="modal-box">
+    <h2>🔐 Guarde isso!</h2>
+    <p>Você vai precisar do seu <strong>código</strong> e <strong>PIN</strong> para entrar em outro dispositivo ou se limpar o navegador.</p>
+    <div class="creds-box">
+      <div class="creds-row">
+        <span class="creds-label">Seu código</span>
+        <span class="creds-value" id="credsCode">----</span>
+      </div>
+      <div class="creds-row">
+        <span class="creds-label">Seu PIN</span>
+        <span class="creds-value" id="credsPin">----</span>
+      </div>
+    </div>
+    <p style="font-size:.78rem">⚠️ O PIN não é salvo em nenhum lugar visível depois desta tela. Anote agora.</p>
+    <button class="modal-btn" id="credsCloseBtn">Já anotei, entendi</button>
+  </div>
+</div>
+
+<!-- CHAT TOGGLE -->
+<button id="chatToggleBtn">💬 Chat <span class="badge" id="chatBadge"></span></button>
+
+<!-- CHAT OVERLAY -->
+<div id="chatOverlay"></div>
+
+<!-- CHAT SIDEBAR -->
+<div id="chatSidebar">
+  <div class="chat-header">
+    <div class="avatar" id="chatPeerAvatar">💬</div>
+    <div class="chat-with">
+      <div class="chat-with-name" id="chatPeerName">Conversas</div>
+      <div class="chat-with-sub">Chat privado</div>
+    </div>
+    <button class="chat-close" id="chatCloseBtn">✕</button>
+  </div>
+  <div class="chat-new-conv" id="chatNewConv">
+    <input type="text" id="chatCodeInput" placeholder="Código de 4 dígitos ex: 4721" maxlength="4" inputmode="numeric">
+    <p>Digite o código e pressione Enter para iniciar uma conversa</p>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-empty"><div class="icon">💬</div><p>Abrindo conversas…</p></div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Mensagem…" maxlength="500" autocomplete="off">
+    <button id="chatSendBtn">➤</button>
+  </div>
+</div>
+
+<nav>
+  <div class="nav-logo">nós<span>3</span></div>
+  <span class="my-name-tag" id="myNameTag" style="display:none"></span>
+  <span class="my-code-tag" id="myCodeTag" style="display:none"></span>
+</nav>
+
+<main>
+  <!-- CREATE POST -->
+  <div class="card create-card">
+    <div class="create-top">
+      <div class="avatar" id="navAvatar">?</div>
+      <button class="create-placeholder" id="openCreateBtn">O que está acontecendo?</button>
+    </div>
+    <div id="createForm">
+      <textarea id="captionInput" placeholder="O que está acontecendo?" rows="3"></textarea>
+      <div id="uploadProgress"><div id="uploadBar"></div></div>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*">
+        <p>🖼️<br><strong>Clique para escolher</strong> ou arraste uma foto</p>
+      </div>
+      <div id="imagePreview">
+        <img id="previewImg" src="" alt="">
+        <button class="remove-img" id="removeImgBtn">✕</button>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" id="cancelCreateBtn">Cancelar</button>
+        <button class="btn btn-primary" id="submitPostBtn" disabled>Publicar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEED -->
+  <div id="feed">
+    <div class="card skeleton-card" id="skeletonCard">
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div class="skel" style="width:40px;height:40px;border-radius:50%"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;justify-content:center">
+          <div class="skel" style="height:12px;width:40%"></div>
+          <div class="skel" style="height:10px;width:25%"></div>
+        </div>
+      </div>
+      <div class="skel" style="height:14px;width:80%;margin-bottom:8px"></div>
+      <div class="skel" style="height:240px;border-radius:10px"></div>
+    </div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+'use strict'
+
+// ── CONSTANTS ────────────────────────────────────────────────
+const REACTIONS = ['❤️','😂','😮','😢','😡','👍']
+
+// ── VISITOR ID ───────────────────────────────────────────────
+let visitorId = localStorage.getItem('visitor_id')
+if (!visitorId) { visitorId = crypto.randomUUID(); localStorage.setItem('visitor_id', visitorId) }
+
+// ── UTILS ────────────────────────────────────────────────────
+function esc(str) {
+  if (!str) return ''
+  const d = document.createElement('div')
+  d.textContent = str
+  return d.innerHTML
+}
+
+function toast(msg, ms = 2800) {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.classList.add('show')
+  setTimeout(() => t.classList.remove('show'), ms)
+}
+
+function timeAgo(iso) {
+  const m = Math.floor((Date.now() - new Date(iso)) / 60000)
+  if (m < 1) return 'agora mesmo'
+  if (m < 60) return `há ${m} min`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `há ${h}h`
+  return `há ${Math.floor(h / 24)}d`
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+  return data
+}
+
+// ── IDENTITY ─────────────────────────────────────────────────
+let _identityResolve = null
+
+function getAuthorName() { return localStorage.getItem('author_name') || null }
+function getMyCode()     { return localStorage.getItem('user_code') || null }
+
+function requireIdentity() {
+  return new Promise(async resolve => {
+    const name = getAuthorName()
+    const code = getMyCode()
+    if (name && code) { resolve({ name, code }); return }
+
+    if (name && !code) {
+      try {
+        const data = await api('/.netlify/functions/users', {
+          method: 'POST',
+          body: JSON.stringify({ visitor_id: visitorId, author_name: name })
+        })
+        if (data.user) {
+          localStorage.setItem('user_code', data.user.user_code)
+          updateNavCode(name, data.user.user_code)
+          resolve({ name, code: data.user.user_code }); return
+        }
+      } catch(e) { console.error('auto-register error:', e) }
+    }
+
+    _identityResolve = resolve
+    document.getElementById('nameModal').classList.add('open')
+    setTimeout(() => document.getElementById('nameInput').focus(), 50)
+  })
+}
+
+async function confirmName() {
+  const n = document.getElementById('nameInput').value.trim().slice(0, 50)
+  const pin = document.getElementById('pinCreateInput').value
+  if (!n || pin.length !== 4) return
+  const btn = document.getElementById('nameConfirmBtn')
+  btn.disabled = true
+  btn.textContent = 'Registrando…'
+  try {
+    const data = await api('/.netlify/functions/users', {
+      method: 'POST',
+      body: JSON.stringify({ visitor_id: visitorId, author_name: n, pin })
+    })
+    const code = data.user.user_code
+    const pinTyped = pin
+    localStorage.setItem('author_name', n)
+    localStorage.setItem('user_code', code)
+    updateNavCode(n, code)
+    document.getElementById('navAvatar').textContent = n[0].toUpperCase()
+    document.getElementById('nameModal').classList.remove('open')
+    showCredsModal(code, pinTyped)
+    if (_identityResolve) { _identityResolve({ name: n, code }); _identityResolve = null }
+  } catch(e) {
+    toast('Erro ao registrar. Tente novamente.')
+    btn.disabled = false
+    btn.textContent = 'Criar meu perfil'
+  }
+}
+
+function showCredsModal(code, pin) {
+  document.getElementById('credsCode').textContent = `#${code}`
+  document.getElementById('credsPin').textContent = pin
+  document.getElementById('credsModal').classList.add('open')
+}
+
+document.getElementById('credsCloseBtn').addEventListener('click', () => {
+  document.getElementById('credsModal').classList.remove('open')
+})
+
+function updateNavCode(name, code) {
+  const tag = document.getElementById('myCodeTag')
+  const nameTag = document.getElementById('myNameTag')
+  if (!tag) return
+  tag.textContent = `#${code}`
+  tag.style.display = 'inline-block'
+  tag.onclick = () => navigator.clipboard?.writeText(code).then(() => toast(`Código #${code} copiado!`))
+  if (nameTag) {
+    nameTag.textContent = name
+    nameTag.style.display = 'inline-block'
+  }
+  document.getElementById('navAvatar').textContent = (name || '?')[0].toUpperCase()
+}
+
+// Init identity UI
+;(function () {
+  const name = getAuthorName()
+  const code = getMyCode()
+  if (name) document.getElementById('navAvatar').textContent = name[0].toUpperCase()
+  if (name && code) updateNavCode(name, code)
+  else if (name && !code) requireIdentity()
+
+  // New user flow
+  const nameInput = document.getElementById('nameInput')
+  const pinCreateInput = document.getElementById('pinCreateInput')
+  const nameBtn   = document.getElementById('nameConfirmBtn')
+  function checkNewUserReady() {
+    nameBtn.disabled = nameInput.value.trim().length === 0 || pinCreateInput.value.length !== 4
+  }
+  nameInput.addEventListener('input', checkNewUserReady)
+  pinCreateInput.addEventListener('input', () => {
+    pinCreateInput.value = pinCreateInput.value.replace(/\D/g, '').slice(0, 4)
+    checkNewUserReady()
+  })
+  nameInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !nameBtn.disabled) confirmName() })
+  pinCreateInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !nameBtn.disabled) confirmName() })
+  nameBtn.addEventListener('click', confirmName)
+
+  // Return user flow
+  const codeInput = document.getElementById('codeReturnInput')
+  const pinReturnInput = document.getElementById('pinReturnInput')
+  const codeBtn   = document.getElementById('codeReturnBtn')
+  function checkReturnReady() {
+    codeBtn.disabled = codeInput.value.length !== 4 || pinReturnInput.value.length !== 4
+  }
+  codeInput.addEventListener('input', () => {
+    codeInput.value = codeInput.value.replace(/\D/g, '').slice(0, 4)
+    checkReturnReady()
+  })
+  pinReturnInput.addEventListener('input', () => {
+    pinReturnInput.value = pinReturnInput.value.replace(/\D/g, '').slice(0, 4)
+    checkReturnReady()
+  })
+  codeInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !codeBtn.disabled) returnWithCode() })
+  pinReturnInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !codeBtn.disabled) returnWithCode() })
+  codeBtn.addEventListener('click', returnWithCode)
+
+  // Toggle between new/return
+  document.getElementById('showReturnBtn').addEventListener('click', () => {
+    document.getElementById('modalNewUser').style.display = 'none'
+    document.getElementById('modalReturning').style.display = 'flex'
+    document.getElementById('modalReturning').style.flexDirection = 'column'
+    document.getElementById('modalReturning').style.gap = '12px'
+    document.getElementById('modalTitle').textContent = '🔑 Reentrar'
+    document.getElementById('modalDesc').textContent = 'Digite seu código de 4 dígitos e o PIN que você criou no cadastro.'
+    setTimeout(() => codeInput.focus(), 50)
+  })
+
+  document.getElementById('showNewBtn').addEventListener('click', () => {
+    document.getElementById('modalReturning').style.display = 'none'
+    document.getElementById('modalNewUser').style.display = 'flex'
+    document.getElementById('modalNewUser').style.flexDirection = 'column'
+    document.getElementById('modalNewUser').style.gap = '12px'
+    document.getElementById('modalTitle').textContent = '👋 Bem-vindo!'
+    document.getElementById('modalDesc').textContent = 'Crie seu perfil para postar, comentar e conversar.'
+    setTimeout(() => nameInput.focus(), 50)
+  })
+})()
+
+async function returnWithCode() {
+  const code = document.getElementById('codeReturnInput').value.trim()
+  const pin  = document.getElementById('pinReturnInput').value.trim()
+  if (code.length !== 4 || pin.length !== 4) return
+
+  const btn = document.getElementById('codeReturnBtn')
+  btn.disabled = true
+  btn.textContent = 'Verificando…'
+
+  try {
+    // PATCH já verifica código + PIN juntos no backend
+    const data = await api('/.netlify/functions/users', {
+      method: 'PATCH',
+      body: JSON.stringify({ user_code: code, pin, visitor_id: visitorId })
+    })
+
+    const user = data.user
+    localStorage.setItem('author_name', user.author_name)
+    localStorage.setItem('user_code', user.user_code)
+    updateNavCode(user.author_name, user.user_code)
+    document.getElementById('nameModal').classList.remove('open')
+    toast(`Bem-vindo de volta, ${user.author_name}#${user.user_code}! 🎉`, 4000)
+
+    await loadFeed()
+
+    // Se havia uma conversa de chat aberta, recarrega com a identidade restaurada
+    if (chatPeerCode) {
+      await loadChatMessages()
+    }
+    // Se a tela de lista de conversas estava aberta, recarrega ela também
+    if (document.getElementById('chatSidebar').classList.contains('open') && !chatPeerCode) {
+      await showConversations()
+    }
+
+    if (_identityResolve) { _identityResolve({ name: user.author_name, code: user.user_code }); _identityResolve = null }
+  } catch(e) {
+    toast(e.message.includes('incorretos') ? 'Código ou PIN incorretos.' : `Erro: ${e.message}`)
+    btn.disabled = false
+    btn.textContent = 'Entrar com meu código'
+  }
+}
+
+// ── CREATE POST ───────────────────────────────────────────────
+let selectedFile = null
+
+document.getElementById('openCreateBtn').addEventListener('click', async () => {
+  await requireIdentity()
+  document.getElementById('createForm').classList.add('open')
+  document.getElementById('captionInput').focus()
+})
+
+document.getElementById('cancelCreateBtn').addEventListener('click', resetForm)
+
+function resetForm() {
+  document.getElementById('createForm').classList.remove('open')
+  document.getElementById('captionInput').value = ''
+  selectedFile = null
+  document.getElementById('imagePreview').style.display = 'none'
+  document.getElementById('dropZone').style.display = 'block'
+  document.getElementById('fileInput').value = ''
+  document.getElementById('submitPostBtn').disabled = true
+}
+
+function checkReady() {
+  document.getElementById('submitPostBtn').disabled = !(document.getElementById('captionInput').value.trim() || selectedFile)
+}
+
+document.getElementById('captionInput').addEventListener('input', checkReady)
+document.getElementById('fileInput').addEventListener('change', () => {
+  const f = document.getElementById('fileInput').files[0]
+  if (f) setPreview(f)
+})
+
+const dz = document.getElementById('dropZone')
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over') })
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'))
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over')
+  const f = e.dataTransfer.files[0]
+  if (f && f.type.startsWith('image/')) setPreview(f)
+})
+
+function setPreview(file) {
+  const img = new Image()
+  const url = URL.createObjectURL(file)
+  img.onload = () => {
+    const MAX = 1200
+    let { width, height } = img
+    if (width > MAX || height > MAX) {
+      if (width > height) { height = Math.round(height * MAX / width); width = MAX }
+      else { width = Math.round(width * MAX / height); height = MAX }
+    }
+    const canvas = document.createElement('canvas')
+    canvas.width = width; canvas.height = height
+    canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+    canvas.toBlob(blob => {
+      selectedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })
+      URL.revokeObjectURL(url)
+      checkReady()
+    }, 'image/jpeg', 0.82)
+  }
+  img.src = url
+  document.getElementById('previewImg').src = url
+  document.getElementById('imagePreview').style.display = 'block'
+  document.getElementById('dropZone').style.display = 'none'
+}
+
+document.getElementById('removeImgBtn').addEventListener('click', () => {
+  selectedFile = null
+  document.getElementById('previewImg').src = ''
+  document.getElementById('imagePreview').style.display = 'none'
+  document.getElementById('dropZone').style.display = 'block'
+  document.getElementById('fileInput').value = ''
+  checkReady()
+})
+
+document.getElementById('submitPostBtn').addEventListener('click', async () => {
+  const caption = document.getElementById('captionInput').value.trim()
+  if (!caption && !selectedFile) return
+  const identity = await requireIdentity()
+  if (!identity) return
+
+  const btn = document.getElementById('submitPostBtn')
+  btn.disabled = true; btn.textContent = 'Publicando…'
+
+  try {
+    let image_url = null
+    if (selectedFile) {
+      const bar  = document.getElementById('uploadBar')
+      const prog = document.getElementById('uploadProgress')
+      prog.classList.add('active'); bar.style.width = '20%'
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader()
+        r.onload = () => res(r.result.split(',')[1])
+        r.onerror = rej
+        r.readAsDataURL(selectedFile)
+      })
+      bar.style.width = '50%'
+      const up = await api('/.netlify/functions/upload', {
+        method: 'POST',
+        body: JSON.stringify({ file: base64, name: selectedFile.name, type: selectedFile.type })
+      })
+      image_url = up.url
+      bar.style.width = '100%'
+      setTimeout(() => prog.classList.remove('active'), 400)
+    }
+    await api('/.netlify/functions/posts', {
+      method: 'POST',
+      body: JSON.stringify({ caption, image_url, visitor_id: visitorId, author_name: identity.name, user_code: identity.code })
+    })
+    toast('Post publicado! 🎉')
+    resetForm()
+    await loadFeed()
+  } catch(e) {
+    toast(`Erro: ${e.message}`)
+    btn.disabled = false; btn.textContent = 'Publicar'
+  }
+})
+
+// ── FEED ─────────────────────────────────────────────────────
+async function loadFeed() {
+  const feed = document.getElementById('feed')
+  try {
+    const { posts } = await api(`/.netlify/functions/posts?visitor=${visitorId}`)
+    document.getElementById('skeletonCard')?.remove()
+
+    if (!posts.length) {
+      feed.innerHTML = `<div class="feed-empty"><div class="icon">📸</div><p>Nenhum post ainda.<br>Seja o primeiro!</p></div>`
+      return
+    }
+
+    // Preserva estado antes de rerender
+    const openSections = new Set()
+    const drafts = {}
+    document.querySelectorAll('.comments-section').forEach(el => {
+      const pid = el.id.replace('comments-', '')
+      if (el.style.display !== 'none') openSections.add(pid)
+      const inp = document.getElementById(`cinput-${pid}`)
+      if (inp?.value) drafts[pid] = inp.value
+    })
+
+    feed.innerHTML = posts.map(renderPost).join('')
+    attachPostEvents()
+
+    // Restaura estado
+    for (const pid of openSections) {
+      const s = document.getElementById(`comments-${pid}`)
+      if (s) { s.style.display = 'block'; loadComments(pid) }
+    }
+    for (const [pid, text] of Object.entries(drafts)) {
+      const inp = document.getElementById(`cinput-${pid}`)
+      if (inp) { inp.value = text; document.getElementById(`csend-${pid}`)?.classList.toggle('active', text.length > 0) }
+    }
+  } catch(e) {
+    console.error('loadFeed error:', e)
+    document.getElementById('skeletonCard')?.remove()
+    feed.innerHTML = '<div class="feed-empty"><p>Erro ao carregar o feed.</p></div>'
+  }
+}
+
+function renderPost(p) {
+  const reactions = p.reactions || {}
+  const total = Object.values(reactions).reduce((a,b) => a+b, 0)
+  const topEmojis = REACTIONS.filter(e => reactions[e] > 0).slice(0, 3).join('')
+  const ur = p.user_reaction || null
+  const isOwner = p.visitor_id === visitorId
+  return `
+  <div class="card post-card" data-id="${esc(p.id)}">
+    <div class="post-header">
+      <div class="avatar">${esc((p.author_name||'A')[0]).toUpperCase()}</div>
+      <div style="flex:1">
+        <div class="post-author">${esc(p.author_name||'Anônimo')}${(isOwner && p.user_code) ? `<span class="user-code"> #${esc(p.user_code)}</span>` : ''}</div>
+        <div class="post-date">${timeAgo(p.created_at)}</div>
+      </div>
+      ${isOwner ? `<button class="post-delete-btn" data-post="${esc(p.id)}" title="Apagar post">🗑️</button>` : ''}
+    </div>
+    ${p.caption ? `<p class="post-caption">${esc(p.caption)}</p>` : ''}
+    ${p.image_url ? `<img class="post-image" src="${esc(p.image_url)}" alt="" loading="lazy">` : ''}
+    <div class="reactions-bar">
+      <div class="reactions-summary">${topEmojis ? `<span>${topEmojis}</span>` : ''}<span>${total || ''}</span></div>
+      <span class="comments-count" data-post="${esc(p.id)}">${p.comment_count > 0 ? `${p.comment_count} comentário${p.comment_count > 1 ? 's' : ''}` : ''}</span>
+    </div>
+    <div class="action-bar">
+      <div class="emoji-picker-wrap">
+        <button class="action-btn react-btn${ur ? ' liked' : ''}" data-post="${esc(p.id)}">
+          <span>${ur || '👍'}</span>${ur && ur !== '👍' ? 'Reagiu' : 'Curtir'}
+        </button>
+        <div class="emoji-picker" id="picker-${esc(p.id)}">
+          ${REACTIONS.map(e => `<button class="emoji-opt" data-post="${esc(p.id)}" data-emoji="${e}">${e}</button>`).join('')}
+        </div>
+      </div>
+      <button class="action-btn comment-toggle-btn" data-post="${esc(p.id)}">💬 Comentar</button>
+    </div>
+    <div class="comments-section" id="comments-${esc(p.id)}" style="display:none">
+      <div id="clist-${esc(p.id)}"></div>
+      <div class="comment-input-row">
+        <div class="avatar" style="width:32px;height:32px;font-size:.85rem">${(getAuthorName()||'?')[0].toUpperCase()}</div>
+        <input class="comment-input" id="cinput-${esc(p.id)}" placeholder="Escreva um comentário…" maxlength="500">
+        <button class="send-btn" id="csend-${esc(p.id)}" data-post="${esc(p.id)}">➤</button>
+      </div>
+    </div>
+  </div>`
+}
+
+function attachPostEvents() {
+  document.querySelectorAll('.react-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation()
+      const pid = btn.dataset.post
+      const picker = document.getElementById(`picker-${pid}`)
+      document.querySelectorAll('.emoji-picker.open').forEach(p => { if (p !== picker) p.classList.remove('open') })
+      picker.classList.toggle('open')
+    })
+  })
+
+  document.querySelectorAll('.emoji-opt').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation()
+      document.getElementById(`picker-${btn.dataset.post}`)?.classList.remove('open')
+      sendReaction(btn.dataset.post, btn.dataset.emoji)
+    })
+  })
+
+  document.querySelectorAll('.comment-toggle-btn, .comments-count').forEach(btn => {
+    btn.addEventListener('click', () => toggleComments(btn.dataset.post))
+  })
+
+  document.querySelectorAll('.comment-input').forEach(input => {
+    const pid = input.id.replace('cinput-', '')
+    const sendBtn = document.getElementById(`csend-${pid}`)
+    input.addEventListener('input', () => sendBtn.classList.toggle('active', input.value.trim().length > 0))
+    input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendComment(pid) } })
+    sendBtn.addEventListener('click', () => sendComment(pid))
+  })
+
+  document.querySelectorAll('.post-delete-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation()
+      deletePost(btn.dataset.post)
+    })
+  })
+}
+
+async function deletePost(postId) {
+  if (!confirm('Apagar este post? Essa ação não pode ser desfeita.')) return
+  try {
+    await api('/.netlify/functions/posts', {
+      method: 'DELETE',
+      body: JSON.stringify({ post_id: postId, visitor_id: visitorId })
+    })
+    document.querySelector(`.post-card[data-id="${postId}"]`)?.remove()
+    toast('Post apagado.')
+  } catch(e) {
+    toast(`Erro ao apagar: ${e.message}`)
+  }
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.emoji-picker.open').forEach(p => p.classList.remove('open'))
+})
+
+// ── REACTIONS ─────────────────────────────────────────────────
+async function sendReaction(postId, emoji) {
+  try {
+    await api('/.netlify/functions/reactions', {
+      method: 'POST',
+      body: JSON.stringify({ post_id: postId, visitor_id: visitorId, emoji })
+    })
+    const wasOpen = document.getElementById(`comments-${postId}`)?.style.display !== 'none'
+    const { post } = await api(`/.netlify/functions/posts/${postId}?visitor=${visitorId}`)
+    const card = document.querySelector(`.post-card[data-id="${postId}"]`)
+    if (card) {
+      card.outerHTML = renderPost(post)
+      attachPostEvents()
+      if (wasOpen) { document.getElementById(`comments-${postId}`).style.display = 'block'; loadComments(postId) }
+    }
+  } catch(e) { toast('Erro ao reagir.') }
+}
+
+// ── COMMENTS ──────────────────────────────────────────────────
+async function toggleComments(postId) {
+  const section = document.getElementById(`comments-${postId}`)
+  if (!section) return
+  if (section.style.display === 'none') {
+    section.style.display = 'block'
+    await loadComments(postId)
+    document.getElementById(`cinput-${postId}`)?.focus()
+  } else {
+    section.style.display = 'none'
+  }
+}
+
+async function loadComments(postId) {
+  const list = document.getElementById(`clist-${postId}`)
+  if (!list) return
+  list.innerHTML = '<p style="font-size:.85rem;color:var(--muted);padding:4px 0">Carregando…</p>'
+  try {
+    const { comments } = await api(`/.netlify/functions/comments?post_id=${postId}`)
+    const myCode = getMyCode()
+    if (!comments.length) { list.innerHTML = '<p style="font-size:.85rem;color:var(--muted);padding:4px 0">Seja o primeiro a comentar!</p>'; return }
+    list.innerHTML = comments.map(c => {
+      const isMe = c.visitor_id === visitorId
+      const nameHtml = (!isMe && c.user_code)
+        ? `<span class="author-link" data-code="${esc(c.user_code)}" data-name="${esc(c.author_name)}">${esc(c.author_name)}</span>`
+        : `<span class="c-author">${esc(c.author_name)}${(isMe && c.user_code) ? `<span class="user-code"> #${esc(c.user_code)}</span>` : ''}</span>`
+      return `<div class="comment-item">
+        <div class="avatar" style="width:32px;height:32px;font-size:.85rem;flex-shrink:0">${esc((c.author_name||'A')[0]).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div class="comment-bubble" style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div style="flex:1;min-width:0">${nameHtml}<p class="c-text">${esc(c.content)}</p></div>
+            ${isMe ? `<button class="comment-delete-btn" data-comment="${esc(c.id)}" data-post="${esc(postId)}" title="Apagar">🗑️</button>` : ''}
+          </div>
+          <div class="comment-time">${timeAgo(c.created_at)}</div>
+        </div>
+      </div>`
+    }).join('')
+    list.querySelectorAll('.author-link').forEach(el => {
+      el.addEventListener('click', () => openChat(el.dataset.code, el.dataset.name))
+    })
+    list.querySelectorAll('.comment-delete-btn').forEach(el => {
+      el.addEventListener('click', () => deleteComment(el.dataset.comment, el.dataset.post))
+    })
+  } catch(e) { list.innerHTML = '<p style="font-size:.85rem;color:var(--muted)">Erro ao carregar.</p>' }
+}
+
+async function deleteComment(commentId, postId) {
+  if (!confirm('Apagar este comentário?')) return
+  try {
+    await api('/.netlify/functions/comments', {
+      method: 'DELETE',
+      body: JSON.stringify({ comment_id: commentId, visitor_id: visitorId })
+    })
+    await loadComments(postId)
+    toast('Comentário apagado.')
+  } catch(e) {
+    toast(`Erro ao apagar: ${e.message}`)
+  }
+}
+
+async function sendComment(postId) {
+  const input = document.getElementById(`cinput-${postId}`)
+  const content = input?.value.trim()
+  if (!content) return
+  const identity = await requireIdentity()
+  if (!identity) return
+  const saved = input.value
+  input.value = ''
+  document.getElementById(`csend-${postId}`)?.classList.remove('active')
+  try {
+    await api('/.netlify/functions/comments', {
+      method: 'POST',
+      body: JSON.stringify({ post_id: postId, author_name: identity.name, content, user_code: identity.code, visitor_id: visitorId })
+    })
+    await loadComments(postId)
+  } catch(e) {
+    toast('Erro ao enviar comentário.')
+    input.value = saved
+    document.getElementById(`csend-${postId}`)?.classList.add('active')
+  }
+}
+
+// ── CHAT ─────────────────────────────────────────────────────
+let chatPeerCode = null
+let chatPeerName = null
+let chatPollInterval = null
+
+function openChat(peerCode, peerName) {
+  const myCode = getMyCode()
+  if (!myCode) { requireIdentity().then(() => openChat(peerCode, peerName)); return }
+  if (peerCode === myCode) { toast('Não é possível conversar consigo mesmo.'); return }
+
+  chatPeerCode = String(peerCode)
+  chatPeerName = peerName || `#${peerCode}`
+
+  document.getElementById('chatPeerAvatar').textContent = chatPeerName[0].toUpperCase()
+  document.getElementById('chatPeerName').textContent = `${chatPeerName} #${chatPeerCode}`
+  document.getElementById('chatNewConv').style.display = 'none'
+  document.getElementById('chatSidebar').classList.add('open')
+  document.getElementById('chatOverlay').classList.add('open')
+  document.getElementById('chatInput').value = ''
+  document.getElementById('chatInput').focus()
+  document.getElementById('chatSendBtn').classList.remove('active')
+
+  loadChatMessages()
+  clearInterval(chatPollInterval)
+  chatPollInterval = setInterval(loadChatMessages, 5000)
+}
+
+function closeChat() {
+  document.getElementById('chatSidebar').classList.remove('open')
+  document.getElementById('chatOverlay').classList.remove('open')
+  clearInterval(chatPollInterval)
+  chatPeerCode = null
+  chatPeerName = null
+}
+
+document.getElementById('chatCloseBtn').addEventListener('click', closeChat)
+document.getElementById('chatOverlay').addEventListener('click', closeChat)
+
+document.getElementById('chatToggleBtn').addEventListener('click', async () => {
+  if (document.getElementById('chatSidebar').classList.contains('open')) { closeChat(); return }
+  const identity = await requireIdentity()
+  if (!identity) return
+  showConversations()
+})
+
+async function showConversations() {
+  const myCode = getMyCode()
+  document.getElementById('chatPeerAvatar').textContent = '💬'
+  document.getElementById('chatPeerName').textContent = 'Conversas'
+  document.getElementById('chatNewConv').style.display = 'block'
+  document.getElementById('chatSidebar').classList.add('open')
+  document.getElementById('chatOverlay').classList.add('open')
+
+  const codeInput = document.getElementById('chatCodeInput')
+  codeInput.value = ''
+  codeInput.onkeydown = async (e) => {
+    if (e.key !== 'Enter') return
+    const code = codeInput.value.replace(/\D/g, '').trim()
+    if (code.length !== 4) { toast('Digite um código de 4 dígitos.'); return }
+    if (code === myCode) { toast('Esse é o seu próprio código!'); return }
+    openChat(code, `#${code}`)
+  }
+  codeInput.oninput = () => { codeInput.value = codeInput.value.replace(/\D/g, '').slice(0, 4) }
+
+  const box = document.getElementById('chatMessages')
+  box.innerHTML = '<div class="chat-empty"><div class="icon">⏳</div><p>Carregando…</p></div>'
+
+  try {
+    const { conversations } = await api(`/.netlify/functions/chat?action=conversations&my_code=${myCode}`)
+    if (!conversations.length) {
+      box.innerHTML = '<div class="chat-empty"><div class="icon">💬</div><p>Nenhuma conversa ainda.<br>Digite o código de alguém acima<br>ou clique no nome nos comentários.</p></div>'
+      return
+    }
+    box.innerHTML = conversations.map(c => `
+      <div class="conv-item" data-code="${esc(c.peer_code)}" data-name="${esc(c.peer_name||'?')}">
+        <div class="avatar" style="width:38px;height:38px;font-size:.9rem;flex-shrink:0">${esc((c.peer_name||'?')[0]).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.92rem">${esc(c.peer_name||'?')}<span class="user-code"> #${esc(c.peer_code)}</span></div>
+          <div style="font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.last_message)}</div>
+        </div>
+        ${c.unread > 0 ? `<span class="conv-unread">${c.unread}</span>` : ''}
+      </div>`).join('')
+    box.querySelectorAll('.conv-item').forEach(el => {
+      el.addEventListener('click', () => openChat(el.dataset.code, el.dataset.name))
+    })
+  } catch(e) {
+    box.innerHTML = '<div class="chat-empty"><p>Erro ao carregar conversas.</p></div>'
+  }
+}
+
+async function loadChatMessages() {
+  const myCode = getMyCode()
+  if (!chatPeerCode || !myCode) return
+  try {
+    const { messages } = await api(`/.netlify/functions/chat?my_code=${myCode}&peer_code=${chatPeerCode}`)
+    const box = document.getElementById('chatMessages')
+    if (!messages.length) {
+      box.innerHTML = `<div class="chat-empty"><div class="icon">👋</div><p>Início da conversa com<br><strong>${esc(chatPeerName)} #${esc(chatPeerCode)}</strong></p></div>`
+      return
+    }
+    const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60
+    box.innerHTML = messages.map(m => {
+      const mine = m.sender_code === myCode
+      return `<div class="chat-bubble-wrap ${mine ? 'mine' : 'theirs'}">
+        ${!mine ? `<span class="bubble-sender">${esc(m.sender_name)}<span class="user-code"> #${esc(m.sender_code)}</span></span>` : ''}
+        <div class="chat-bubble">${esc(m.content)}</div>
+        <span class="bubble-time">${timeAgo(m.created_at)}</span>
+      </div>`
+    }).join('')
+    if (atBottom) box.scrollTop = box.scrollHeight
+  } catch(e) { console.error('loadChatMessages error:', e) }
+}
+
+
+async function sendChatMessage() {
+  // Garante identidade registrada antes de enviar
+  const identity = await requireIdentity()
+  if (!identity) return
+
+  const myCode = identity.code
+  const myName = identity.name
+
+  if (!chatPeerCode) {
+    toast('Selecione uma conversa primeiro.')
+    return
+  }
+
+  const input = document.getElementById('chatInput')
+  const content = input.value.trim()
+  if (!content) return
+
+  const saved = content
+  input.value = ''
+  document.getElementById('chatSendBtn').classList.remove('active')
+
+  try {
+    await api('/.netlify/functions/chat', {
+      method: 'POST',
+      body: JSON.stringify({ sender_code: myCode, sender_name: myName, receiver_code: chatPeerCode, content: saved })
+    })
+    await loadChatMessages()
+    document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight
+  } catch(e) {
+    toast(`Erro ao enviar: ${e.message}`)
+    input.value = saved
+    document.getElementById('chatSendBtn').classList.add('active')
+  }
+}
+
+
+// Chat send events via delegation
+document.addEventListener('input', e => {
+  if (e.target.id === 'chatInput') {
+    document.getElementById('chatSendBtn').classList.toggle('active', e.target.value.trim().length > 0)
+  }
+})
+document.addEventListener('keydown', e => {
+  if (e.target.id === 'chatInput' && e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault(); sendChatMessage()
+  }
+})
+document.addEventListener('click', e => {
+  if (e.target.id === 'chatSendBtn' || e.target.closest?.('#chatSendBtn')) {
+    sendChatMessage()
+  }
+})
+
+// Badge de não lidas
+async function checkUnread() {
+  const myCode = getMyCode()
+  if (!myCode) return
+  try {
+    const { count } = await api(`/.netlify/functions/chat?action=unread&my_code=${myCode}`)
+    const badge = document.getElementById('chatBadge')
+    if (count > 0) { badge.textContent = count; badge.classList.add('show') }
+    else badge.classList.remove('show')
+  } catch(e) {}
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+loadFeed()
+
+setInterval(() => {
+  const anyFocused = document.querySelector('.comment-input:focus, #captionInput:focus, #nameInput:focus, #chatInput:focus')
+  if (!anyFocused) loadFeed()
+}, 20000)
+
+setTimeout(() => { checkUnread(); setInterval(checkUnread, 10000) }, 3000)
+</script>
+</body>
+</html>
