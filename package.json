@@ -1,0 +1,9 @@
+{
+  "name": "nos-tres",
+  "version": "4.0.0",
+  "description": "Feed social com chat privado, identidade Nome#Código e PIN — backend seguro via Netlify Functions",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "bcryptjs": "^2.4.3"
+  }
+}
